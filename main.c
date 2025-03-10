@@ -13,237 +13,295 @@ Ist er unter 21 verliert der Spieler
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <conio.h>
 
-int sum_of_player_cards(int player_cards[]);
-int sum_of_dealer_cards(int dealer_cads[]);
+#define GUTHABEN 1000
+
+int sum_of_cards(int cards[]);
+void card_prints(int cards[], int i, int player_cards[]);
+void Blackjack_check(int cards[]);
+
+int guthaben = GUTHABEN;
 
 void main()
 {
 	srand(time(0));
 
-	int player_cards[21] = { 0 };
-	int dealer_cards[21] = { 0 };
-	int player_random[21];
-	int dealer_random[21];
-	int ass_value;
+	char start_check;
+	int i = 1;
 
-	for (int i = 0; i < 21; i++)
+	do
 	{
-		player_random[i] = rand() % 4;
-		dealer_random[i] = rand() % 4;
-	}
+		printf("Runde %d\n", i);
+		i++;
 
-	printf("Deine Karten: ");
+		int player_cards[21] = { 0 };
+		int dealer_cards[21] = { 0 };
+		int player_choice_B_D_K[21];
+		int dealer_choice_B_D_K[21];
+		int einsatz;
+		int zusatzlicher_einsatz;
 
-	for (int i = 0; i < 2; i++)
-	{
-		player_cards[i] = rand() % 11 + 1;
+		printf("Guthaben: %d\n", guthaben);
 
-		switch (player_cards[i]) {
-		case 10:
-			switch (player_random[i]) {
-			case 0:
-				printf("10 ");
-				break;
-			case 1:
-				printf("B ");
-				break;
-			case 2:
-				printf("D ");
-				break;
-			case 3:
-				printf("K ");
-				break;
-			}
-			break;
+		printf("Einsatz setzen: ");
+		scanf("%d", &einsatz);
 
-		case 1 || 11:
-			printf("%d ", player_cards[i]);
-			/*printf("(A = ");
-			scanf("%d)", &ass_value);
-			player_cards[i] = ass_value;
-			printf(") ");*/
-			break;
+		if (einsatz < 0)
+			einsatz = 0;
 
-		default:
-			printf("%d ", player_cards[i]);
-		}
-	}
-	if (player_cards[0] + player_cards[1] < 21)
-	{
-
-		printf("\nKarten des Dealers: ");
-
-		dealer_cards[0] = rand() % 11 + 1;
-
-		switch (dealer_cards[0]) {
-		case 10:
-
-			switch (dealer_random[0]) {
-			case 0:
-				printf("10 ");
-				break;
-			case 1:
-				printf("B ");
-				break;
-			case 2:
-				printf("D ");
-				break;
-			case 3:
-				printf("K ");
-				break;
-			}
-			break;
-
-		case 1 || 11:
-			printf("%d ", dealer_cards[0]);
-			break;
-		default:
-			printf("%d", dealer_cards[0]);
-		}
-		printf("\n");
-
-		int player_counter = 2;
-		int dealer_counter = 1;
-		char Ja_Nein_check;
-
-		while (sum_of_player_cards(player_cards) < 21 && sum_of_dealer_cards(dealer_cards) < 21)
+		if (einsatz >= guthaben)
 		{
-			printf("Karte ziehen?(J/N): ");
-			scanf(" %c", &Ja_Nein_check);
+			einsatz = guthaben;
+			guthaben = 0;
+		}
+		else 
+			guthaben -= einsatz;
 
-			if (sum_of_dealer_cards(dealer_cards) > 17 && Ja_Nein_check == 'N')
-				break;
-			else
+		printf("Deine Karten: ");
+
+		for (int i = 0; i < 2; i++)
+		{
+			player_cards[i] = rand() % 13 + 2;
+			player_choice_B_D_K[i] = player_cards[i];
+			if (player_cards[i] >= 12 && player_cards[i] <= 14)
+				player_cards[i] = 10;
+
+		}
+	
+		if (sum_of_cards(player_cards) == 21)
+		{
+			Blackjack_check(player_choice_B_D_K);
+		}
+		else
+		{
+			for (int i = 0; i < 2; i++)
 			{
-				if (Ja_Nein_check == 'J')
+				card_prints(player_choice_B_D_K, i, player_cards);
+
+			}
+			printf("\n");
+		}
+
+		if (!(sum_of_cards(player_cards) < 21))
+		{
+			printf("Der Spieler hat das Spiel mit einem Blackjack gewonnen\n");
+			einsatz *= 1.5;
+			printf("Gewinn: %d\n", einsatz);
+			guthaben += einsatz;
+		}
+		else
+		{
+
+			printf("Karten des Dealers: ");
+
+			dealer_cards[0] = rand() % 13 + 2;
+
+			dealer_choice_B_D_K[0] = dealer_cards[0];
+			if (dealer_cards[0] >= 12 && dealer_cards[0] <= 14)
+				dealer_cards[0] = 10;
+
+			card_prints(dealer_choice_B_D_K, 0, dealer_cards);
+			printf("\n");
+
+			int player_counter = 2;
+			int dealer_counter = 1;
+			char Ja_Nein_check;
+
+			while (sum_of_cards(player_cards) < 21 && sum_of_cards(dealer_cards) < 21)
+			{
+				if (guthaben != 0)
 				{
-					player_cards[player_counter] = rand() % 11 + 1;
+					printf("Einsatz erhoehen: ");
+					scanf("%d", &zusatzlicher_einsatz);
 
-					printf("Deine Karten: ");
-					for (int i = 0; i <= player_counter; i++)
+					if (zusatzlicher_einsatz < 0)
+						zusatzlicher_einsatz = 0;
+
+					if (zusatzlicher_einsatz + einsatz >= guthaben)
 					{
-						switch (player_cards[i]) {
-						case 10:
-
-							switch (player_random[i]) {
-							case 0:
-								printf("10 ");
-								break;
-							case 1:
-								printf("B ");
-								break;
-							case 2:
-								printf("D ");
-								break;
-							case 3:
-								printf("K ");
-								break;
-							}
-							break;
-
-						case 1 || 11:
-							printf("%d ", player_cards[i]);
-							/*printf("(A = ");
-							scanf("%d", &ass_value);
-							player_cards[i] = ass_value;
-							printf(") ");*/
-							break;
-						default:
-							printf("%d ", player_cards[i]);
-						}
+						einsatz += guthaben;
+						guthaben = 0;
 					}
-					printf("\n");
-					player_counter++;
-				}
-
-				if (sum_of_dealer_cards(dealer_cards) <= 17)
-				{
-					dealer_cards[dealer_counter] = rand() % 11 + 1;
-
-					printf("Karten des Dealers: ");
-
-					for (int i = 0; i <= dealer_counter; i++)
+					else
 					{
-						switch (dealer_cards[i]) {
-						case 10:
-
-							switch (dealer_random[i]) {
-							case 0:
-								printf("10 ");
-								break;
-							case 1:
-								printf("B ");
-								break;
-							case 2:
-								printf("D ");
-								break;
-							case 3:
-								printf("K ");
-								break;
-							}
-							break;
-
-						case (1 || 11):
-							printf("%d ", dealer_cards[i]);
-							break;
-						default:
-							printf("%d ", dealer_cards[i]);
-						}
+						guthaben -= zusatzlicher_einsatz;
+						einsatz += zusatzlicher_einsatz;
 					}
-					printf("\n");
-					dealer_counter++;
+
+					if (guthaben == 0)
+					{
+						printf("All in\n");
+					}
+					else
+						printf("Einsatz: %d\n", einsatz);
+					
 				}
 				else
+					printf("All in\n");
+
+				printf("\nKarte ziehen?(j/n): ");
+				scanf(" %c", &Ja_Nein_check);
+
+				if (sum_of_cards(dealer_cards) > 17 && Ja_Nein_check == 'n')
 					break;
+				else
+				{
 
-				printf("\n");
+					if (Ja_Nein_check == 'j')
+					{
+						player_cards[player_counter] = rand() % 13 + 2;
+
+						player_choice_B_D_K[player_counter] = player_cards[player_counter];
+						if (player_cards[player_counter] >= 12 && player_cards[player_counter] <= 14)
+							player_cards[player_counter] = 10;
+
+
+						printf("Deine Karten: ");
+						for (int i = 0; i <= player_counter; i++)
+						{
+							card_prints(player_choice_B_D_K, i, player_cards);
+						}
+						printf("\n");
+						player_counter++;
+					}
+
+					if (sum_of_cards(dealer_cards) <= 17)
+					{
+						dealer_cards[dealer_counter] = rand() % 13 + 2;
+
+						dealer_choice_B_D_K[dealer_counter] = dealer_cards[dealer_counter];
+
+						if (dealer_cards[dealer_counter] >= 12 && dealer_cards[dealer_counter] <= 14)
+							dealer_cards[dealer_counter] = 10;
+
+						printf("Karten des Dealers: ");
+
+						for (int i = 0; i <= dealer_counter; i++)
+						{
+							card_prints(dealer_choice_B_D_K, i, dealer_cards);
+						}
+						dealer_counter++;
+					}
+					else
+						break;
+
+					printf("\n");
+				}
 			}
-		}
 
-		if (sum_of_player_cards(player_cards) <= 21 && sum_of_dealer_cards(dealer_cards) <= 21)
-		{
-			if (sum_of_player_cards > sum_of_dealer_cards)
+			int sum_of_player_cards = sum_of_cards(player_cards);
+			int sum_of_dealer_cards = sum_of_cards(dealer_cards);
+
+			if (sum_of_player_cards <= 21 && sum_of_dealer_cards <= 21)
+			{
+				if (sum_of_player_cards > sum_of_dealer_cards)
+				{
+					printf("Der Spieler hat gewonnen\n");
+					printf("Gewinn: %d", einsatz);
+					guthaben += einsatz * 2;
+				}
+
+				else if (sum_of_player_cards < sum_of_dealer_cards)
+					printf("Die Bank hat gewonnen\n");
+				
+				else
+				{
+					printf("Stand off\n");
+					guthaben += einsatz;
+				}
+			}
+			else if (sum_of_player_cards <= 21 && sum_of_dealer_cards > 21)
+			{
 				printf("Der Spieler hat gewonnen\n");
-
-			else if (sum_of_player_cards < sum_of_dealer_cards)
+				printf("Gewinn: %d\n", einsatz);
+				guthaben += einsatz * 2;
+			}
+			else if (sum_of_player_cards > 21 && sum_of_dealer_cards <= 21)
 				printf("Die Bank hat gewonnen\n");
 
 			else
-				printf("Gleichstand\n");
+			{
+				printf("Kein Gewinn fur Bank oder Spieler\n");
+				guthaben += einsatz;
+			}
 		}
-		else if (sum_of_player_cards(player_cards) <= 21 && sum_of_dealer_cards(dealer_cards) > 21)
-			printf("Der Spieler hat gewonnen\n");
+		printf("\n");
 
-		else if (sum_of_player_cards(player_cards) > 21 && sum_of_dealer_cards(dealer_cards) <= 21)
-			printf("Die Bank hat gewonnen\n");
-
+		if (guthaben == 0)
+		{
+			printf("Alles verloren\n");
+			start_check = 'n';
+		}
 		else
-			printf("Kein Gewinn für Bank oder Spieler\n");
-	}
+		{
+			printf("Noch eine Runde spielen? (j/n): ");
+			scanf(" %c", &start_check);
+			printf("\n");
+		}
+	}while (start_check == 'j');
+
+	printf("Guthaben: %d\n", guthaben);
+
+	if (guthaben - GUTHABEN >= 0)
+		printf("Gesammter Gewinn: %d\n", guthaben - GUTHABEN);
 	else
-		printf("Der Spieler hat das Spiel mit einem Blackjack gewonnen\n");
+		printf("Gesammter Verlust: %d\n", (guthaben - GUTHABEN) * -1);
 }
 
-int sum_of_player_cards(int player_cards[])
+int sum_of_cards(int cards[])
 {
 	int sum = 0;
 
 	for (int i = 0; i < 21; i++)
 	{
-		sum = sum + player_cards[i];
+		sum = sum + cards[i];
 	}
 	return sum;
 }
 
-int sum_of_dealer_cards(int dealer_cards[])
+void card_prints(int print_cards[], int i, int math_cards[])
 {
-	int sum = 0;
+	char ass_check;
+	switch (print_cards[i]) {
+	case 12:
+		printf("B ");
+		break;
+	case 13:
+		printf("D ");
+		break;
 
-	for (int i = 0; i < 21; i++)
-	{
-		sum = sum + dealer_cards[i];
+	case 14:
+		printf("K ");
+		break;
+	case 1:
+		printf("A ");
+		break;
+	case 11:
+		printf("A ");
+		if (sum_of_cards(math_cards) > 21)
+			math_cards[i] = 1;
+		break;
+	default:
+		printf("%d ", print_cards[i]);
 	}
-	return sum;
+
+}
+
+void Blackjack_check(int player_choice_B_D_K[])
+{
+	if (player_choice_B_D_K[0] >= 12 && player_choice_B_D_K[0] <= 14 || player_choice_B_D_K[1] >= 12 && player_choice_B_D_K[1] <= 14)
+	{
+		if (player_choice_B_D_K[0] == 1 || player_choice_B_D_K[0] == 11 || player_choice_B_D_K[1] == 1 || player_choice_B_D_K[1] == 11)
+		{
+			if (player_choice_B_D_K[0] == 12 || player_choice_B_D_K[1] == 12)
+				printf(" B A \n");
+			else if (player_choice_B_D_K[0] == 13 || player_choice_B_D_K[1] == 13)
+				printf(" D A \n");
+			else if (player_choice_B_D_K[0] == 14 || player_choice_B_D_K[1] == 14)
+				printf(" K A \n");
+		}
+	}
+
 
 }
